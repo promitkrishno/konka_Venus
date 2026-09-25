@@ -1,0 +1,98 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// --- USER & ROLES ---
+model User {
+  id        String   @id @default(cuid())
+  name      String?
+  email     String   @unique
+  role      Role     @default(CUSTOMER)
+  orders    Order[]
+  createdAt DateTime @default(now())
+}
+
+enum Role {
+  CUSTOMER
+  STAFF
+  ADMIN
+}
+
+// --- CATALOG & INVENTORY ---
+model Product {
+  id          String           @id @default(cuid())
+  name        String
+  description String
+  price       Float
+  category    String           // e.g., "Sarees", "Kurtis", "Bags"
+  isActive    Boolean          @default(true)
+  variants    ProductVariant[]
+  orderItems  OrderItem[]
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+}
+
+model ProductVariant {
+  id         String      @id @default(cuid())
+  productId  String
+  product    Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
+  size       String      // e.g., "S", "M", "Free Size"
+  color      String?
+  stock      Int         @default(0)
+  orderItems OrderItem[]
+}
+
+// --- ORDERS & CHECKOUT ---
+model Order {
+  id            String      @id @default(cuid())
+  userId        String?     // Optional to allow Guest Checkout
+  user          User?       @relation(fields: [userId], references: [id])
+  totalAmount   Float
+  status        OrderStatus @default(PENDING)
+  paymentMethod String      // e.g., "bKash", "Nagad", "COD"
+  items         OrderItem[]
+  createdAt     DateTime    @default(now())
+}
+
+model OrderItem {
+  id                 String          @id @default(cuid())
+  orderId            String
+  order              Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId          String
+  product            Product         @relation(fields: [productId], references: [id])
+  variantId          String?
+  variant            ProductVariant? @relation(fields: [variantId], references: [id])
+  quantity           Int             @default(1)
+  priceAtPurchase    Float
+  customMeasurements String?         // Stores the client's custom measurements (e.g., "Length: 42, Chest: 36")
+}
+
+enum OrderStatus {
+  PENDING
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+// --- APPOINTMENTS ---
+model Appointment {
+  id        String   @id @default(cuid())
+  name      String
+  phone     String
+  date      DateTime
+  notes     String?  // E.g., "Need custom measurements for a saree"
+  status    ApptStatus @default(SCHEDULED)
+  createdAt DateTime @default(now())
+}
+
+enum ApptStatus {
+  SCHEDULED
+  COMPLETED
+  CANCELLED
+}
