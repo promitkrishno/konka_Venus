@@ -18,7 +18,6 @@ export default async function ShopPage() {
           <p className="text-kv-olive">Explore our handcrafted pieces.</p>
         </div>
         
-        {/* Simple Category Filter (Visual only for now) */}
         <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
           {["All", "Sarees", "Kurtis", "Tops", "Bags"].map((category) => (
             <button 
@@ -35,7 +34,6 @@ export default async function ShopPage() {
         <div className="py-20 text-center text-kv-olive flex flex-col items-center">
           <p className="text-lg">Our collection is currently being updated.</p>
           <p className="text-sm mt-2">Please check back soon!</p>
-          {/* Quick link back to admin for you */}
           <Link href="/admin" className="mt-6 text-kv-terracotta hover:underline">
             Go to Admin Dashboard to add products
           </Link>
@@ -44,13 +42,15 @@ export default async function ShopPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
           {products.map((product) => (
             <Link href={`/product/${product.id}`} key={product.id} className="group flex flex-col gap-3">
-              {/* Product Image Area */}
+              {/* Product Image Area updated to show real uploads */}
               <div className="relative aspect-[3/4] bg-kv-sage rounded-lg overflow-hidden flex items-center justify-center group-hover:opacity-90 transition-opacity">
-                <span className="text-kv-forest/40 text-sm tracking-widest uppercase">
-                  {product.category} Image
-                </span>
+                {product.imageUrl ? (
+                  /* eslint-disable-next-line @next/next/no-img-element */
+                  <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover" />
+                ) : (
+                  <span className="text-kv-forest/40 text-sm tracking-widest uppercase">{product.category} Image</span>
+                )}
                 
-                {/* Quick Add Button */}
                 <Button 
                   size="icon" 
                   className="absolute bottom-4 right-4 h-12 w-12 rounded-full bg-kv-terracotta hover:bg-kv-terracotta/90 text-kv-offwhite shadow-lg md:opacity-0 md:group-hover:opacity-100 transition-opacity"
@@ -59,7 +59,6 @@ export default async function ShopPage() {
                 </Button>
               </div>
 
-              {/* Product Info */}
               <div className="flex flex-col">
                 <h3 className="font-medium text-kv-forest text-lg group-hover:text-kv-terracotta transition-colors">
                   {product.name}

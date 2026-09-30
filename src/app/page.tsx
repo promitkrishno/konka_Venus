@@ -67,7 +67,12 @@ export default async function Home() {
               <Link href={`/product/${product.id}`} key={product.id} className="group flex flex-col gap-3">
                 {/* Product Image Area */}
                 <div className="relative aspect-[3/4] bg-kv-sage rounded-lg overflow-hidden flex items-center justify-center group-hover:opacity-90 transition-opacity">
-                  <span className="text-kv-forest/40 text-sm tracking-widest uppercase">{product.category}</span>
+                  {product.imageUrl ? (
+                    /* eslint-disable-next-line @next/next/no-img-element */
+                    <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover" />
+                  ) : (
+                    <span className="text-kv-forest/40 text-sm tracking-widest uppercase">{product.category}</span>
+                  )}
                   
                   <Button 
                     size="icon" 
