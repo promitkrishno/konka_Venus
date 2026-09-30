@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import prisma from "@/lib/prisma";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { AddToCartForm } from "@/components/features/cart/AddToCartForm";
+import { ProductGallery } from "@/components/features/product/ProductGallery";
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -18,33 +19,33 @@ export default async function DynamicProductPage({ params }: Props) {
     notFound();
   }
 
+  // 1. Safely parse the images array using 'any' to bypass strict TS cache
+  let images: string[] = [];
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const prod = product as any;
+    if (prod.images) {
+      images = JSON.parse(prod.images);
+    }
+  } catch (e) {
+    console.error("Failed to parse images", e);
+  }
+  
+  // 2. Fallback to the single imageUrl if the array is empty
+  if (images.length === 0 && product.imageUrl) {
+    images = [product.imageUrl];
+  }
+  // 2. Fallback to the single imageUrl if the array is empty
+  if (images.length === 0 && product.imageUrl) {
+    images = [product.imageUrl];
+  }
+
   return (
     <div className="container mx-auto px-4 py-8 max-w-7xl min-h-[80vh]">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-10 lg:gap-16">
         
-        {/* Left: Image Gallery updated to show real uploads */}
-        <div className="flex flex-col gap-4">
-          <div className="aspect-[3/4] w-full bg-kv-sage rounded-xl flex items-center justify-center overflow-hidden">
-            {product.imageUrl ? (
-              /* eslint-disable-next-line @next/next/no-img-element */
-              <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover" />
-            ) : (
-              <span className="text-kv-forest/40 tracking-widest uppercase">{product.category} Image</span>
-            )}
-          </div>
-          
-          <div className="grid grid-cols-4 gap-4">
-            {[1, 2, 3, 4].map((thumb) => (
-              <div key={thumb} className="aspect-square bg-kv-sage rounded-md cursor-pointer hover:border-2 hover:border-kv-forest transition-all overflow-hidden">
-                 {/* Show a mini version of the image in the first thumbnail slot */}
-                 {product.imageUrl && thumb === 1 && (
-                    /* eslint-disable-next-line @next/next/no-img-element */
-                    <img src={product.imageUrl} alt="thumb" className="w-full h-full object-cover opacity-70 hover:opacity-100" />
-                 )}
-              </div>
-            ))}
-          </div>
-        </div>
+        {/* Left: Render the Interactive Gallery */}
+        <ProductGallery images={images} category={product.category} />
 
         {/* Right: Product Info & Actions */}
         <div className="flex flex-col pt-4 md:pt-10">

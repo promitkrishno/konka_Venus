@@ -1,15 +1,23 @@
 import prisma from "@/lib/prisma";
-import { Package, ClipboardList, Image as ImageIcon } from "lucide-react";
+import { Package, ClipboardList, Image as ImageIcon, Calendar, Trash2 } from "lucide-react";
 import { AddProductForm } from "@/components/features/admin/AddProductForm";
+import { deleteProduct } from "@/actions/product";
 
 export default async function AdminDashboard() {
+  // Fetch Inventory
   const products = await prisma.product.findMany({
     orderBy: { createdAt: "desc" },
   });
 
+  // Fetch Orders
   const orders = await prisma.order.findMany({
     orderBy: { createdAt: "desc" },
     include: { items: { include: { product: true } } },
+  });
+
+  // Fetch Appointments
+  const appointments = await prisma.appointment.findMany({
+    orderBy: { date: "asc" }, // Show upcoming dates first
   });
 
   return (
@@ -22,7 +30,6 @@ export default async function AdminDashboard() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        
         {/* Left: Interactive Add Product Form */}
         <div className="lg:col-span-1 bg-kv-sage/20 p-6 rounded-xl border border-kv-sage h-fit">
           <h2 className="font-medium text-kv-forest text-xl mb-4">Add New Product</h2>
@@ -45,6 +52,7 @@ export default async function AdminDashboard() {
                     <th className="px-4 py-3">Product</th>
                     <th className="px-4 py-3">Category</th>
                     <th className="px-4 py-3">Price</th>
+                    <th className="px-4 py-3 text-right">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-kv-sage text-kv-forest">
@@ -52,7 +60,7 @@ export default async function AdminDashboard() {
                     <tr key={product.id} className="hover:bg-kv-sage/10 transition-colors">
                       <td className="px-4 py-3">
                         {product.imageUrl ? (
-                           // eslint-disable-next-line @next/next/no-img-element
+                           /* eslint-disable-next-line @next/next/no-img-element */
                           <img src={product.imageUrl} alt={product.name} className="h-10 w-10 rounded object-cover border border-kv-sage" />
                         ) : (
                           <div className="h-10 w-10 rounded bg-kv-sage flex items-center justify-center text-kv-olive">
@@ -63,6 +71,17 @@ export default async function AdminDashboard() {
                       <td className="px-4 py-3 font-medium">{product.name}</td>
                       <td className="px-4 py-3">{product.category}</td>
                       <td className="px-4 py-3">৳ {product.price.toLocaleString()}</td>
+                      <td className="px-4 py-3 text-right">
+                        {/* FIX: Inline server action to safely pass the ID */}
+                        <form action={async () => {
+                          "use server";
+                          await deleteProduct(product.id);
+                        }}>
+                          <button type="submit" className="text-red-500 hover:text-red-700 hover:bg-red-50 p-2 rounded transition-colors" title="Delete Product">
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </form>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -72,13 +91,59 @@ export default async function AdminDashboard() {
         </div>
       </div>
 
-      {/* SECTION 2: RECENT ORDERS */}
+      {/* SECTION 2: CONSULTATION APPOINTMENTS */}
+      <div className="mt-16 border-t border-kv-sage pt-12">
+        <div className="flex items-center gap-3 mb-8">
+          <Calendar className="h-8 w-8 text-kv-forest" />
+          <h2 className="font-serif text-3xl font-bold text-kv-forest">Upcoming Consultations</h2>
+        </div>
+        
+        {appointments.length === 0 ? (
+          <div className="p-8 text-center border border-dashed border-kv-sage rounded-xl text-kv-olive">
+            No consultation appointments scheduled yet.
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {appointments.map((appt) => (
+              <div key={appt.id} className="bg-white border border-kv-sage rounded-xl p-6 shadow-sm flex flex-col justify-between">
+                <div>
+                  <div className="flex justify-between items-start border-b border-kv-sage pb-4 mb-4">
+                    <div>
+                      <p className="font-medium text-kv-forest text-lg">{appt.name}</p>
+                      <p className="text-sm text-kv-olive mt-1">{appt.phone}</p>
+                    </div>
+                    <span className="inline-flex items-center rounded-full bg-kv-sage px-3 py-1 text-xs font-semibold text-kv-forest uppercase tracking-wider">
+                      {appt.status || "Pending"}
+                    </span>
+                  </div>
+                  
+                  <div className="text-sm text-kv-forest">
+                    <p className="font-medium mb-1">Requested Date:</p>
+                    <p className="text-kv-terracotta font-semibold text-base mb-4">
+                      {new Date(appt.date).toLocaleDateString(undefined, { weekday: 'short', year: 'numeric', month: 'long', day: 'numeric' })}
+                    </p>
+                    
+                    {appt.notes && (
+                      <div className="bg-kv-sage/20 p-3 rounded border border-kv-sage/50">
+                        <p className="font-medium mb-1 text-xs uppercase tracking-wider text-kv-olive">Client Notes:</p>
+                        <p className="text-kv-forest italic">&quot;{appt.notes}&quot;</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* SECTION 3: RECENT ORDERS */}
       <div className="mt-16 border-t border-kv-sage pt-12">
         <div className="flex items-center gap-3 mb-8">
           <ClipboardList className="h-8 w-8 text-kv-forest" />
           <h2 className="font-serif text-3xl font-bold text-kv-forest">Recent Orders</h2>
         </div>
-        {/* ... (Existing Orders code remains exactly the same logic) ... */}
+        
         {orders.length === 0 ? (
           <div className="p-8 text-center border border-dashed border-kv-sage rounded-xl text-kv-olive">
             No orders have been placed yet.
@@ -94,7 +159,7 @@ export default async function AdminDashboard() {
                     <p className="text-xs text-kv-olive mt-1">Paid via: {order.paymentMethod}</p>
                   </div>
                   <span className="inline-flex items-center rounded-full bg-kv-sage px-3 py-1 text-xs font-semibold text-kv-forest uppercase tracking-wider">
-                    {order.status}
+                    {order.status || "Completed"}
                   </span>
                 </div>
                 <div className="flex flex-col gap-3">
