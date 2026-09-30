@@ -1,15 +1,15 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react"; // Icon for the Add to Cart button
+import { Plus } from "lucide-react";
+import prisma from "@/lib/prisma";
 
-export default function Home() {
-  // Mock data for initial UI testing
-  const newArrivals = [
-    { id: 1, name: "Emerald Handwoven Saree", price: "৳ 3,200", category: "Sarees" },
-    { id: 2, name: "Terracotta Cotton Kurti", price: "৳ 1,850", category: "Kurtis" },
-    { id: 3, name: "Minimalist Boho Top", price: "৳ 1,200", category: "Tops" },
-    { id: 4, name: "Traditional Silk Bag", price: "৳ 950", category: "Bags" },
-  ];
+export default async function Home() {
+  // Fetch the 4 most recent active products from the database
+  const latestProducts = await prisma.product.findMany({
+    where: { isActive: true },
+    orderBy: { createdAt: "desc" },
+    take: 4,
+  });
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -48,7 +48,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* New Arrivals Product Grid */}
+      {/* New Arrivals Product Grid (Live Database Data) */}
       <section className="py-16 px-4 md:px-8 max-w-7xl mx-auto w-full border-t border-border">
         <div className="flex items-center justify-between mb-8">
           <h2 className="font-serif text-3xl font-bold text-kv-forest">New Arrivals</h2>
@@ -57,31 +57,38 @@ export default function Home() {
           </Link>
         </div>
 
-        {/* 1 column on mobile, 2 on tablet, 4 on desktop */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {newArrivals.map((product) => (
-            <div key={product.id} className="group flex flex-col gap-3">
-              {/* Product Image Area */}
-              <div className="relative aspect-[3/4] bg-kv-sage rounded-lg overflow-hidden flex items-center justify-center group-hover:opacity-90 transition-opacity">
-                <span className="text-kv-forest/40 text-sm tracking-widest uppercase">{product.category} Image</span>
-                
-                {/* Quick Add Button - Appears on hover for desktop, always visible on mobile */}
-                <Button 
-                  size="icon" 
-                  className="absolute bottom-4 right-4 h-12 w-12 rounded-full bg-kv-terracotta hover:bg-kv-terracotta/90 text-kv-offwhite shadow-lg md:opacity-0 md:group-hover:opacity-100 transition-opacity"
-                >
-                  <Plus className="h-6 w-6" />
-                </Button>
-              </div>
+        {latestProducts.length === 0 ? (
+          <div className="text-center py-10 text-kv-olive border border-dashed border-kv-sage rounded-xl">
+            <p>New collections are dropping soon!</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {latestProducts.map((product) => (
+              <Link href={`/product/${product.id}`} key={product.id} className="group flex flex-col gap-3">
+                {/* Product Image Area */}
+                <div className="relative aspect-[3/4] bg-kv-sage rounded-lg overflow-hidden flex items-center justify-center group-hover:opacity-90 transition-opacity">
+                  <span className="text-kv-forest/40 text-sm tracking-widest uppercase">{product.category}</span>
+                  
+                  <Button 
+                    size="icon" 
+                    className="absolute bottom-4 right-4 h-12 w-12 rounded-full bg-kv-terracotta hover:bg-kv-terracotta/90 text-kv-offwhite shadow-lg md:opacity-0 md:group-hover:opacity-100 transition-opacity"
+                  >
+                    <Plus className="h-6 w-6" />
+                  </Button>
+                </div>
 
-              {/* Product Info */}
-              <div className="flex flex-col">
-                <h3 className="font-medium text-kv-forest text-lg">{product.name}</h3>
-                <p className="text-kv-olive">{product.price}</p>
-              </div>
-            </div>
-          ))}
-        </div>
+                {/* Product Info */}
+                <div className="flex flex-col">
+                  <h3 className="font-medium text-kv-forest text-lg group-hover:text-kv-terracotta transition-colors">
+                    {product.name}
+                  </h3>
+                  <p className="text-sm text-kv-forest/70 line-clamp-1 mb-1">{product.description}</p>
+                  <p className="text-kv-olive font-medium">৳ {product.price.toLocaleString()}</p>
+                </div>
+              </Link>
+            ))}
+          </div>
+        )}
       </section>
 
     </div>

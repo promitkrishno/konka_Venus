@@ -29,7 +29,8 @@ model Product {
   name        String
   description String
   price       Float
-  category    String           // e.g., "Sarees", "Kurtis", "Bags"
+  category    String           
+  imageUrl    String?          // <-- ADD THIS LINE
   isActive    Boolean          @default(true)
   variants    ProductVariant[]
   orderItems  OrderItem[]
