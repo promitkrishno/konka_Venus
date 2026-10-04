@@ -1,11 +1,17 @@
 import prisma from "@/lib/prisma";
 import { Package, ClipboardList, Image as ImageIcon, Calendar, Trash2 } from "lucide-react";
 import { AddProductForm } from "@/components/features/admin/AddProductForm";
+import { GalleryManager } from "@/components/features/admin/GalleryManager";
 import { deleteProduct } from "@/actions/product";
 
 export default async function AdminDashboard() {
   // Fetch Inventory
   const products = await prisma.product.findMany({
+    orderBy: { createdAt: "desc" },
+  });
+
+  // Fetch Gallery Images (For the new Cinematic Hero)
+  const galleryImages = await prisma.galleryImage.findMany({
     orderBy: { createdAt: "desc" },
   });
 
@@ -17,7 +23,7 @@ export default async function AdminDashboard() {
 
   // Fetch Appointments
   const appointments = await prisma.appointment.findMany({
-    orderBy: { date: "asc" }, // Show upcoming dates first
+    orderBy: { date: "asc" }, 
   });
 
   return (
@@ -72,7 +78,6 @@ export default async function AdminDashboard() {
                       <td className="px-4 py-3">{product.category}</td>
                       <td className="px-4 py-3">৳ {product.price.toLocaleString()}</td>
                       <td className="px-4 py-3 text-right">
-                        {/* FIX: Inline server action to safely pass the ID */}
                         <form action={async () => {
                           "use server";
                           await deleteProduct(product.id);
@@ -91,7 +96,18 @@ export default async function AdminDashboard() {
         </div>
       </div>
 
-      {/* SECTION 2: CONSULTATION APPOINTMENTS */}
+      {/* SECTION 2: LANDING PAGE GALLERY MANAGEMENT */}
+      <div className="mt-16 border-t border-kv-sage pt-12">
+        <div className="flex items-center gap-3 mb-8">
+          <ImageIcon className="h-8 w-8 text-kv-forest" />
+          <h2 className="font-serif text-3xl font-bold text-kv-forest">Cinematic Hero Gallery</h2>
+        </div>
+        <div className="bg-kv-sage/10 p-6 rounded-xl border border-kv-sage">
+          <GalleryManager images={galleryImages} />
+        </div>
+      </div>
+
+      {/* SECTION 3: CONSULTATION APPOINTMENTS */}
       <div className="mt-16 border-t border-kv-sage pt-12">
         <div className="flex items-center gap-3 mb-8">
           <Calendar className="h-8 w-8 text-kv-forest" />
@@ -137,7 +153,7 @@ export default async function AdminDashboard() {
         )}
       </div>
 
-      {/* SECTION 3: RECENT ORDERS */}
+      {/* SECTION 4: RECENT ORDERS */}
       <div className="mt-16 border-t border-kv-sage pt-12">
         <div className="flex items-center gap-3 mb-8">
           <ClipboardList className="h-8 w-8 text-kv-forest" />

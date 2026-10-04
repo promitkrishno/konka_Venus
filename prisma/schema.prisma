@@ -98,3 +98,10 @@ enum ApptStatus {
   COMPLETED
   CANCELLED
 }
+
+model GalleryImage {
+  id        String   @id @default(cuid())
+  imageUrl  String
+  title     String?  // We will use this for the dynamic image titles
+  createdAt DateTime @default(now())
+}
