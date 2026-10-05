@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import prisma from "@/lib/prisma";
 import { CinematicHero } from "@/components/features/ui/CinematicHero";
+import type { Product } from "@prisma/client";
 
 export default async function Home() {
   // Fetch the 4 most recent active products for the New Arrivals section
@@ -86,7 +87,7 @@ export default async function Home() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {latestProducts.map((product) => (
+            {latestProducts.map((product: Product) => (
               <Link href={`/product/${product.id}`} key={product.id} className="group flex flex-col gap-3">
                 <div className="relative aspect-[3/4] bg-kv-sage rounded-lg overflow-hidden flex items-center justify-center group-hover:opacity-90 transition-opacity">
                   {product.imageUrl ? (

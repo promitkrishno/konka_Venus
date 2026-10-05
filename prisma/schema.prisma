@@ -9,12 +9,22 @@ datasource db {
 
 // --- USER & ROLES ---
 model User {
-  id        String   @id @default(cuid())
-  name      String?
-  email     String   @unique
-  role      Role     @default(CUSTOMER)
-  orders    Order[]
-  createdAt DateTime @default(now())
+  id                  String    @id @default(cuid())
+  name                String?
+  email               String    @unique
+  
+  // Authentication Fields (Optional so normal customers aren't forced to have passwords)
+  passwordHash        String?   
+  failedLoginAttempts Int       @default(0)
+  lockedUntil         DateTime?
+  
+  // Role & Relationships
+  role                String    @default("CUSTOMER")
+  orders              Order[]
+  
+  // Timestamps
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
 }
 
 enum Role {
@@ -105,3 +115,4 @@ model GalleryImage {
   title     String?  // We will use this for the dynamic image titles
   createdAt DateTime @default(now())
 }
+
