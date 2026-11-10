@@ -36,7 +36,7 @@ export async function createProduct(formData: FormData) {
 // NEW: Delete Product Logic
 export async function deleteProduct(id: string) {
   try {
-    // We must delete associated order items first to prevent SQLite database locks
+    // We must delete associated order items first to prevent foreign key constraint errors
     await prisma.orderItem.deleteMany({
       where: { productId: id }
     });
