@@ -10,6 +10,23 @@ interface HeroImage {
   title: string | null;
 }
 
+function HeroShimmerImage({ src, alt }: { src: string; alt: string }) {
+  const [loaded, setLoaded] = useState(false);
+
+  return (
+    <>
+      {!loaded && <div className="absolute inset-0 animate-pulse bg-kv-sage/10" />}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={src}
+        alt={alt}
+        className={`w-full h-full object-cover transition-opacity duration-700 ${loaded ? "opacity-100" : "opacity-0"}`}
+        onLoad={() => setLoaded(true)}
+      />
+    </>
+  );
+}
+
 export function CinematicHero({ images }: { images: HeroImage[] }) {
   const [currentIndex, setCurrentIndex] = useState(0);
 
@@ -39,8 +56,7 @@ export function CinematicHero({ images }: { images: HeroImage[] }) {
               : "opacity-0 scale-100"
           }`}
         >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={img.imageUrl} alt={img.title || "Konka Venus"} className="w-full h-full object-cover" />
+          <HeroShimmerImage src={img.imageUrl} alt={img.title || "Konka Venus"} />
         </div>
       ))}
 

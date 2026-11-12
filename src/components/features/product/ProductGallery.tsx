@@ -2,6 +2,25 @@
 
 import { useState } from "react";
 
+function ShimmerImage({ src, alt, className }: { src: string; alt: string; className?: string }) {
+  const [loaded, setLoaded] = useState(false);
+
+  return (
+    <div className="relative w-full h-full">
+      {!loaded && (
+        <div className="absolute inset-0 animate-pulse bg-kv-sage/40 rounded-md" />
+      )}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={src}
+        alt={alt}
+        className={`${className} transition-opacity duration-500 ${loaded ? "opacity-100" : "opacity-0"}`}
+        onLoad={() => setLoaded(true)}
+      />
+    </div>
+  );
+}
+
 export function ProductGallery({ images, category }: { images: string[], category: string }) {
   const [mainImage, setMainImage] = useState(images[0] || "");
 
@@ -10,8 +29,7 @@ export function ProductGallery({ images, category }: { images: string[], categor
       {/* Main Large Image */}
       <div className="aspect-[3/4] w-full bg-kv-sage rounded-xl flex items-center justify-center overflow-hidden">
         {mainImage ? (
-          /* eslint-disable-next-line @next/next/no-img-element */
-          <img src={mainImage} alt="Main product" className="w-full h-full object-cover" />
+          <ShimmerImage src={mainImage} alt="Main product" className="w-full h-full object-cover" />
         ) : (
           <span className="text-kv-forest/40 tracking-widest uppercase">{category} Image</span>
         )}
@@ -28,8 +46,7 @@ export function ProductGallery({ images, category }: { images: string[], categor
                 mainImage === img ? "border-kv-forest" : "border-transparent hover:border-kv-forest/50"
               }`}
             >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={img} alt={`Thumbnail ${idx + 1}`} className="w-full h-full object-cover" />
+              <ShimmerImage src={img} alt={`Thumbnail ${idx + 1}`} className="w-full h-full object-cover" />
             </div>
           ))}
         </div>
